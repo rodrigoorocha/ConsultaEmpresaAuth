@@ -20,9 +20,6 @@ public class UsuarioController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(string), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationException), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(AlreadyExistsException), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cria([FromBody] UsuarioDto usuarioDTO)
     {
         var email = await _usuarioService.CriarUsuarioAsync(usuarioDTO);

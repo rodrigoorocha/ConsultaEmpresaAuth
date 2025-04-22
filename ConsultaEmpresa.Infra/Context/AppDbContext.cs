@@ -16,6 +16,9 @@ namespace ConsultaEmpresa.Infra.Context
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
 
+        // Add DbSet properties for your entities here
+        // public DbSet<YourEntity> YourEntities { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new UsuarioConfiguration());

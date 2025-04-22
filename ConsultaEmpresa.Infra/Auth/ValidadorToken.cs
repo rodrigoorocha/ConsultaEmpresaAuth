@@ -21,6 +21,12 @@ public class ValidadorToken : GeradorDeChaveDeSeguranca, IValidadorToken
 
     public int Validar(string token)
     {
+        // Remove the 'Bearer ' prefix if it exists
+        if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            token = token.Substring("Bearer ".Length).Trim();
+        }
+
         var validacaoDeParametros = new TokenValidationParameters
         {
             ValidateAudience = false,

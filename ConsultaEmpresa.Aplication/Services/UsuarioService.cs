@@ -31,7 +31,7 @@ public class UsuarioService : IUsuarioService
 
         var senhaEncriptada = _senhaEncriptador.Encriptar(usuario.Senha);
 
-        var novoUsuario = new Usuario(usuario.Email, senhaEncriptada);
+        var novoUsuario = new Usuario(usuario.Email, senhaEncriptada, usuario.Nome);
 
         await _usuarioRepository.CriaAsync(novoUsuario);
 

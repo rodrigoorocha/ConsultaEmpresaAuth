@@ -7,25 +7,43 @@ using ConsultaEmpresa.Domain.Features.Shared;
 using ConsultaEmpresa.Infra.Auth;
 using Microsoft.OpenApi.Models;
 using ConsultaEmpresa.Infra;
+using System.Diagnostics;
+using ConsultaEmpresa.Domain.Features.Empresas;
+using ConsultaEmpresa.Infra.Repository.Empresas; // Add this namespace for opening the browser
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Ensure the connection string is correctly configured
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Add DbContext with SQL Server
+// Register AppDbContext with the dependency injection container
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5, // Número de tentativas de repetição
+            maxRetryDelay: TimeSpan.FromSeconds(30), // Atraso máximo entre tentativas
+            errorNumbersToAdd: null // Opcional: especificar números de erro SQL para repetir
+        )
+    )
+);
 
 // Register repositories
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 
 // Register services
 builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<GeradorDeTokenService>();
 
 // Register the SenhaEncriptador service
 builder.Services.AddScoped<SenhaEncriptador>();
+
+// Add this line to register controllers
+builder.Services.AddControllers();
+
+// Register HttpClient service
+builder.Services.AddHttpClient();
 
 // JWT configuration
 var minutosDeDuracao = builder.Configuration.GetValue<uint>("Settings:JWT:minutosDeDuracao");
@@ -88,3 +106,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Open Swagger in the default browser
+if (app.Environment.IsDevelopment())
+{
+    var swaggerUrl = "http://localhost:5059/swagger/index.html";
+    Process.Start(new ProcessStartInfo
+    {
+        FileName = swaggerUrl,
+        UseShellExecute = true
+    });
+}

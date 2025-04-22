@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text.Json;
 using ConsultaEmpresa.Infra.Repository.Empresas;
+using ConsultaEmpresa.Domain.Dto;
+using System;
 
 namespace ConsultaEmpresa.Aplication.Services
 {
@@ -19,19 +21,29 @@ namespace ConsultaEmpresa.Aplication.Services
             _httpClient = httpClient;
         }
 
-        public async Task CadastrarEmpresaAsync(string cnpj, string userId)
+        public async Task CadastrarEmpresaAsync(EmpresaDto empresaDto, int userId)
         {
-            var response = await _httpClient.GetAsync($"https://www.receitaws.com.br/v1/cnpj/{cnpj}");
+            var response = await _httpClient.GetAsync($"https://www.receitaws.com.br/v1/cnpj/{empresaDto.cnpj}");
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var empresaData = JsonSerializer.Deserialize<Empresa>(json);
 
-            if (empresaData != null)
+            // Use custom JsonSerializerOptions to handle case-insensitive deserialization
+            var options = new JsonSerializerOptions
             {
-                empresaData.UsuarioId = int.Parse(userId);
-                await _empresaRepository.CriaAsync(empresaData);
+                PropertyNameCaseInsensitive = true
+            };
+
+            var empresaData = JsonSerializer.Deserialize<Empresa>(json, options);
+
+            // Log or debug the raw JSON response for troubleshooting
+            if (empresaData == null)
+            {
+                throw new Exception($"Failed to deserialize Empresa. Raw JSON: {json}");
             }
+
+            empresaData.UsuarioId = userId;
+            await _empresaRepository.CriaAsync(empresaData);
         }
 
         public async Task<IEnumerable<Empresa>> ListarEmpresasDoUsuarioAsync(string userId)

@@ -12,10 +12,11 @@ namespace ConsultaEmpresa.Domain.Features.Usuarios
             SenhaHash = senha;
         }
 
-        public Usuario(string email, string senhaHash)
+        public Usuario(string email, string senhaHash, string nome)
         {
             Email = email;
             SenhaHash = senhaHash;
+            Nome = nome;
         }
     }
 }
